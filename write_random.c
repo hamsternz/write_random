@@ -7,8 +7,8 @@
 
 
 #define BUFFER_SIZE (4*1024*1024)
-#define FILES            16
-#define BLOCKS_PER_FILE  16
+#define FILES            8
+#define BLOCKS_PER_FILE  32
 unsigned char rand1[BUFFER_SIZE];
 unsigned char rand2[BUFFER_SIZE];
 unsigned char buffer[BUFFER_SIZE];
@@ -68,7 +68,7 @@ int main(int argc,char *argv[]) {
   int i;
   init_rand();
   printf("This is only good for generating %i files of %iMB each\n",
-          FILES, BUFFER_SIZE/1024/FILES*BUFFER_SIZE/1024);
+          FILES, BUFFER_SIZE/1024/FILES*(BUFFER_SIZE/1024));
   for(i = 0; i < FILES; i++) {
     char fname[10];
     FILE *f;
