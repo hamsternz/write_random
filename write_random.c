@@ -4,11 +4,12 @@
 #include <unistd.h>
 #include <sys/types.h>
 #include <sys/wait.h>
+#include <fcntl.h>
 
 
 #define BUFFER_SIZE (4*1024*1024)
-#define FILES            8
-#define BLOCKS_PER_FILE  32
+#define FILES            16
+#define BLOCKS_PER_FILE  4096
 unsigned char rand1[BUFFER_SIZE];
 unsigned char rand2[BUFFER_SIZE];
 unsigned char buffer[BUFFER_SIZE];
@@ -24,7 +25,7 @@ void merge(int offset) {
    }
 }
 
-void write_random_data(FILE *f, int offset) {
+void write_random_data(int f, int offset) {
   int i;
   for(i = 0; i < BLOCKS_PER_FILE; i++) {
     merge(offset);
@@ -32,7 +33,7 @@ void write_random_data(FILE *f, int offset) {
        offset = 0;
      else
        offset++;
-    if(fwrite(buffer,sizeof(buffer),1,f) != 1) {
+    if(write(f,buffer,sizeof(buffer)) != sizeof(buffer)) {
       fprintf(stderr,"Write error\n");
       return;
     }
@@ -71,11 +72,11 @@ int main(int argc,char *argv[]) {
           FILES, BUFFER_SIZE/1024/FILES*(BUFFER_SIZE/1024));
   for(i = 0; i < FILES; i++) {
     char fname[10];
-    FILE *f;
+    int f;
 
     sprintf(fname,"random%i",i);
-    f = fopen(fname,"wb");
-    if(f == NULL) {
+    f = open(fname,O_WRONLY|O_CREAT,0666);
+    if(f == -1) {
        fprintf(stderr,"Unable to open %s\n",fname);
        continue;
     }
@@ -85,7 +86,7 @@ int main(int argc,char *argv[]) {
        fprintf(stderr,"Writing to %s finished\n",fname); 
        exit(0);
     }
-    fclose(f);
+    close(f);
   }
   for(i = 0; i < FILES; i++) {
     int status;
